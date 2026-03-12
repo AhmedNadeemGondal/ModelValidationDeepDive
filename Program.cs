@@ -1,13 +1,18 @@
+using ModelValidationDeepDive;
 using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapPost("/employees", (Employee employee) =>
+// This is top level endpoint routing
+// It abstracts away app.UseRouting() and app.UseEndpoints()
+// It's less boilerplate but one needs to be aware of this.
+app.MapPost("/employees", (Employee employee) => // the employee class has annotations for data validation rules.
 {
     EmployeesRepository.AddEmployee(employee);
     return "Employee is added successfully.";
-}).WithParameterValidation();
+})
+    .WithParameterValidation(); // Needs minimalApi.Extensions NuGet Package
 
 app.Run();
 public static class EmployeesRepository
@@ -69,12 +74,15 @@ public class Employee
 {
     public int Id { get; set; }
 
-    [Required]
+    [Required] // This annotation will check the request body
+               // and provide a valid reponse telling the user why validation failed.
     public string Name { get; set; }
     public string Position { get; set; }
 
     [Required]
-    [Range(50000, 200000)]
+    [Range(50000, 200000)] // This annotation will check the request body
+                           // and provide a valid reponse telling the user why validation failed.
+    [Employee_EnsureSalary]
     public double Salary { get; set; }
 
     public Employee(int id, string name, string position, double salary)
